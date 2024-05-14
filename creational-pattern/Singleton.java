@@ -17,7 +17,11 @@ class Main {
  */
 class Singleton {
 
-    private static Singleton instance;
+    /**
+     * The instance is marked volatile so that it won't be accessble
+     * from other threads while it is use in any other operation
+     */
+    private static volatile Singleton instance;
 
     private String data;
 
@@ -39,12 +43,22 @@ class Singleton {
      * 
      */
     public static Singleton getInstance(String data) {
-        if (instance == null) {
-            instance = new Singleton(data);
+        Singleton localInstance = instance;
+        /**
+         * Using local vars since reading and writing to volatile member is expensive
+         * Using local vars can increase efficiency upto 40%
+         */
+        if (localInstance == null) {
+            synchronized (Singleton.class) {
+                localInstance = instance;
+                if (localInstance == null) {
+                    localInstance = instance = new Singleton(data);
+
+                }
+            }
         }
 
-        return instance;
-
+        return localInstance;
     }
 
     @Override
